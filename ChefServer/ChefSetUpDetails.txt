@@ -19,7 +19,7 @@ vi client.rb
 
 log_level :info
 log_location     STDOUT
-chef_server_url  "https://ip-172-31-10-45/organizations/testorg"
+chef_server_url  "https://CHEF-SERVER-IPADDRESS/organizations/testorg"
 validation_client_name "testorg-validator"
 validation_key "/etc/chef/testorg-validator.pem"
 ssl_verify_mode  :verify_none
