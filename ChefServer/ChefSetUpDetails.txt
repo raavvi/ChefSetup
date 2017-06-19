@@ -1,0 +1,79 @@
+Chef Server:
+
+1. Create t2.small
+2. Wget https://packages.chef.io/files/stable/chef-server/12.15.7/el/7/chef-server-core-12.15.7-1.el7.x86_64.rpm
+3. Run rpm -ivh chef-server-core-12.15.7-1.el7.x86_64.rpm
+4. chef-server-ctl reconfigure
+4. chef-server-ctl user-create chefadmin Chef Admin chefadmin@chef.io 'abc123' --filename /etc/chef/chefadmin.pem
+5. chef-server-ctl org-create testorg 'Test Org.' --association_user chefadmin --filename /etc/chef/testorg-validator.pem
+
+Chef Client: 
+
+1. Download Chef-client (https://packages.chef.io/files/stable/chef/13.1.31/el/7/chef-13.1.31-1.el7.x86_64.rpm)
+2. rpm -ivh chef-13.1.31-1.el7.x86_64.rpm
+3. mkdir /etc/chef
+4. Copy the content of testorg-validator.pem from ChefServer and paste the content by creating a new file called testorg-validator.pem
+
+5. After that, create new file client.rb
+vi client.rb
+
+log_level :info
+log_location     STDOUT
+chef_server_url  "https://ip-172-31-10-45/organizations/testorg"
+validation_client_name "testorg-validator"
+validation_key "/etc/chef/testorg-validator.pem"
+ssl_verify_mode  :verify_none
+
+
+Workstation : 
+1. Download Chefdk  (https://packages.chef.io/files/stable/chefdk/1.4.3/el/7/chefdk-1.4.3-1.el7.x86_64.rpm)
+2. rpm ivh chefdk-1.4.3-1.el7.x86_64.rpm
+3. mkdir /etc/chef/testorg
+4. Copy chefadmin.pem from Chef server and paste it here 
+5. Copy testorg-validator.pem from Chefserver and paste it here 
+6. vi knife.rb
+
+log_level :info
+log_location     STDOUT
+node_name     "chefadmin"
+chef_server_url  "https://ip-172-31-10-45/organizations/testorg"
+validation_client_name "testorg-validator"
+validation_key "/etc/chef/testorg/testorg-validator.pem"
+client_key     "/etc/chef/testorg/chefadmin.pem"
+ssl_verify_mode  :verify_none
+cookbooks_path   "/etc/chef/testorg/cookbooks/"
+
+7. Knife node list   ( this should show the machines which are regiestered to the chef server)
+
+
+Chef-manage:   ( For dashboard )
+1. Goto ChefServer
+2. chef-server-ctl install chef-manage
+3. chef-server-ctl reconfigure
+4. chef-manage-ctl reconfigure
+
+
+Runlist:
+knife node run_list add ip-172-31-7-183.ap-south-1.compute.internal recipe["testcook"]
+
+Role:
+export EDITOR=$(which vi)
+knife role create testrole       --> Save and exit
+knife role run_list add testrole recipe["testcook"], recipe["testcook2"]
+
+Environment:
+1.knife environment create prod
+Note : Under  "cookbook_versions": {
+    "testcook": "~> 0.1.0",
+    "testcook2": "~> 0.1.0"
+  }
+
+2.knife environment create dev
+Note : Under  "cookbook_versions": {
+    "testcook": "~> 0.1.1",
+    "testcook2": "~> 0.1.1"
+  }
+
+3.knife node environment set ip-172-31-7-183.ap-south-1.compute.internal dev
+4.knife environment show dev -F json
+

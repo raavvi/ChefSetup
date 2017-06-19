@@ -1,0 +1,66 @@
+﻿We’ll keep things tidy by putting all of these files inside our own ~/chef directory. 
+
+1. We tell it what to configure by providing a run list in a node.json file.
+2. cookbooks
+3. solo.rb : We use a solo.rb file to tell chef-solo how to find the cookbooks and the run list.
+
+
+
+mkdir -p ~/chef/cookbooks/helloworld/recipes
+
+$ echo "file "/tmp/helloworld.txt" do
+  owner "ubuntu"
+  group "ubuntu"
+  mode 00544
+  action :create
+  content "Hello, Implementor!"
+end' > ~/chef/cookbooks/helloworld/recipes/default.rb
+
+
+
+$ echo '
+{
+  "run_list": [ "recipe[helloworld]" ]
+}' > ~/chef/node.json
+
+
+$ echo '
+  file_cache_path "/home/ubuntu/chef"
+  cookbook_path "/home/ubuntu/chef/cookbooks"
+  json_attribs "/home/ubuntu/chef/node.json"
+' > ~/chef/solo.rb
+
+
+sudo chef-solo -c ~/chef/solo.rb
+
+
+*********************************************************
+
+$ mkdir -p ~/chef/cookbooks/crondemo/recipes
+$ echo '
+  cron "log something" do
+    action :create
+    hour "*"
+    minute "*"
+    command "logger Hello!"
+  end
+' > ~/chef/cookbooks/crondemo/recipes/default.rb
+
+
+"run_list": [ "recipe[helloworld]", "recipe[crondemo]" ]
+
+sudo chef-solo -c ~/chef/solo.rb
+
+************************************************************
+
+$ echo '
+  cron "log something else" do
+    action :create
+    hour "*"
+    minute "*"
+    command "logger Goodbye!"
+  end      
+' > ~/chef/cookbooks/crondemo/recipes/goodbye.rb
+
+"run_list": [ "recipe[helloworld]", "recipe[crondemo]", "recipe[crondemo::goodbye]" ]
+
