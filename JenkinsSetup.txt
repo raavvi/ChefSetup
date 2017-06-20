@@ -20,6 +20,7 @@ open ssh, hhtp, https and Custom TCP -> Port 8080 -> 0.0.0.0/0
 
 7. You should see the Jenkins console. It will also displays the location of admin password
 
+##test##
    
     
       
